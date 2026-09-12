@@ -282,7 +282,7 @@ export const faqItems: FAQItem[] = [
   {
     question: 'Можно ли вызвать мастера в выходной день?',
     answer:
-      'Да, мы работаем без выходных — с 8:00 до 21:00. Вы можете оставить заявку в любой день, и мы подберём удобное для вас время визита мастера.',
+      'Да, мы работаем круглосуточно — 24/7, без выходных. Вы можете оставить заявку в любое время, и мы подберём удобное для вас время визита мастера.',
   },
   {
     question: 'Запчасти входят в стоимость?',
@@ -292,6 +292,7 @@ export const faqItems: FAQItem[] = [
 ];
 
 export interface Review {
+  id?: string;
   name: string;
   location: string;
   rating: number;
@@ -363,12 +364,12 @@ export interface ContactInfo {
 }
 
 export const contactInfo: ContactInfo = {
-  phone: '+998 71 200-50-50',
-  phoneHref: '+998712005050',
-  telegram: '@tehmaster_uz',
-  telegramHref: 'https://t.me/tehmaster_uz',
-  workingHours: 'Ежедневно с 8:00 до 21:00',
-  workingHoursShort: '8:00 – 21:00',
+  phone: '+998 90 120-07-96',
+  phoneHref: '+998901200796',
+  telegram: '@Texnoremont1993',
+  telegramHref: 'https://t.me/Texnoremont1993',
+  workingHours: '24/7',
+  workingHoursShort: '24/7',
   serviceArea: 'Весь Ташкент и пригород',
   email: 'info@tehmaster.uz',
 };

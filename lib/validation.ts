@@ -82,20 +82,36 @@ export const repairRequestSchema = z.object({
     .or(z.literal('')),
 });
 
-export const quickRequestSchema = z.object({
-  kind: z.literal('quick'),
-  appliance: z.enum(['refrigerator', 'washing_machine']),
-  name: z.string().trim().min(2, 'Введите имя').max(50, 'Слишком длинное имя'),
-  surname: z.string().trim().min(2, 'Введите фамилию').max(50, 'Слишком длинная фамилия'),
-  phone: z
+export const reviewSchema = z.object({
+  name: z
     .string()
     .trim()
-    .min(9, 'Введите корректный номер телефона')
-    .max(20, 'Слишком длинный номер')
-    .regex(/^[+]?[\d\s\-()]+$/, 'Некорректный формат номера'),
+    .min(2, 'Введите имя — минимум 2 символа')
+    .max(50, 'Слишком длинное имя'),
+  rating: z.coerce
+    .number()
+    .int('Оценка должна быть целым числом')
+    .min(1, 'Поставьте оценку от 1 до 5')
+    .max(5, 'Оценка не может быть больше 5'),
+  appliance: z
+    .string()
+    .trim()
+    .min(2, 'Укажите технику')
+    .max(60, 'Слишком длинное значение'),
+  text: z
+    .string()
+    .trim()
+    .min(10, 'Напишите отзыв — минимум 10 символов')
+    .max(1000, 'Слишком длинный отзыв — максимум 1000 символов'),
+  location: z
+    .string()
+    .trim()
+    .max(80, 'Слишком длинное значение')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type RepairRequest = z.infer<typeof repairRequestSchema>;
-export type QuickRequest = z.infer<typeof quickRequestSchema>;
+export type ReviewInput = z.infer<typeof reviewSchema>;
 
 export type FormStep = 1 | 2 | 3 | 4;

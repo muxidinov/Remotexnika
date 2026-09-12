@@ -59,7 +59,7 @@ export function Hero({ onBookClick, onServicesClick }: HeroProps) {
         {/* Left: Text content */}
         <div className="flex flex-col items-start gap-6 pt-4 lg:pt-0">
           <motion.div
-            initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 16 }}
+            initial={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary"
@@ -72,7 +72,7 @@ export function Hero({ onBookClick, onServicesClick }: HeroProps) {
           </motion.div>
 
           <motion.h1
-            initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 24 }}
+            initial={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
             className="font-display text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-[3.75rem] text-balance"
@@ -82,7 +82,7 @@ export function Hero({ onBookClick, onServicesClick }: HeroProps) {
           </motion.h1>
 
           <motion.p
-            initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 20 }}
+            initial={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-xl text-base text-muted-foreground leading-relaxed sm:text-lg text-pretty"
@@ -91,7 +91,7 @@ export function Hero({ onBookClick, onServicesClick }: HeroProps) {
           </motion.p>
 
           <motion.div
-            initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 20 }}
+            initial={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col gap-3 sm:flex-row sm:items-center"
@@ -116,7 +116,7 @@ export function Hero({ onBookClick, onServicesClick }: HeroProps) {
 
           {/* Trust badges */}
           <motion.div
-            initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 16 }}
+            initial={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3"

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" role="img" aria-label="ТехМастер">
+ <rect width="180" height="180" fill="hsl(188 85% 38%)"/>
+ <g fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M126 54a28 28 0 0 1-37 34.7L58 120a14 14 0 0 1-19.8-19.8l31.3-31.3A28 28 0 0 1 104 32l-15.7 15.7 9.2 9.2L113 41.2A28 28 0 0 1 126 54z"/>
+ </g>
+</svg>

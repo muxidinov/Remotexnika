@@ -7,7 +7,7 @@ export default function StructuredData() {
       'Профессиональный ремонт бытовой техники в Ташкенте. Ремонт холодильников, стиральных машин, посудомоечных машин, плит, духовок, кондиционеров. Быстрый выезд мастера на дом.',
     image: 'https://tehmaster.uz/og-image.png',
     url: 'https://tehmaster.uz',
-    telephone: '+998712005050',
+    telephone: '+998901200796',
     priceRange: 'от 50 000 сум',
     address: {
       '@type': 'PostalAddress',
@@ -15,7 +15,7 @@ export default function StructuredData() {
       addressCountry: 'UZ',
     },
     areaServed: 'Ташкент',
-    openingHours: 'Mo-Su 08:00-21:00',
+    openingHours: 'Mo-Su 00:00-24:00',
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.9',
@@ -69,6 +69,14 @@ export default function StructuredData() {
     },
   };
 
+  const websiteData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'ТехМастер',
+    url: 'https://tehmaster.uz',
+    inLanguage: 'ru',
+  };
+
   const faqData = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -102,7 +110,7 @@ export default function StructuredData() {
         name: 'Можно ли вызвать мастера в выходной день?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Да, мы работаем без выходных — с 8:00 до 21:00. Вы можете оставить заявку в любой день.',
+          text: 'Да, мы работаем круглосуточно — 24/7, без выходных. Вы можете оставить заявку в любое время.',
         },
       },
     ],
@@ -113,6 +121,10 @@ export default function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData) }}
       />
       <script
         type="application/ld+json"

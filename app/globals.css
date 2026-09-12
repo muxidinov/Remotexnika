@@ -194,3 +194,15 @@
     animation: spin-slow 20s linear infinite;
   }
 }
+
+/* Respect users who prefer reduced motion: disable looping/attention animations. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-ring,
+  .animate-marquee,
+  .animate-float-slow,
+  .animate-float-medium,
+  .animate-float-fast,
+  .animate-spin-slow {
+    animation: none !important;
+  }
+}

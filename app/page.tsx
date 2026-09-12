@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Navbar } from '@/components/shared/navbar';
 import { MobileCTA } from '@/components/shared/mobile-cta';
+import { FloatingCallButton } from '@/components/shared/floating-call-button';
 import { RepairForm } from '@/components/sections/repair-form';
 import { Hero } from '@/components/sections/hero';
 import { Services } from '@/components/sections/services';
@@ -14,7 +15,6 @@ import { FAQ } from '@/components/sections/faq';
 import { Reviews } from '@/components/sections/reviews';
 import { Contact } from '@/components/sections/contact';
 import { Footer } from '@/components/sections/footer';
-import { QuickRequest } from '@/components/sections/quick-request';
 import { LanguageProvider } from '@/lib/i18n';
 import type { ApplianceKey } from '@/lib/constants';
 
@@ -45,7 +45,6 @@ export default function Home() {
 
       <main>
         <Hero onBookClick={openForm} onServicesClick={handleServicesClick} />
-        <QuickRequest />
         <Services onBookClick={handleBookWithAppliance} />
         <Pricing onBookClick={openForm} />
         <WhyChooseUs />
@@ -58,6 +57,7 @@ export default function Home() {
 
       <Footer onBookClick={openForm} />
       <MobileCTA onBookClick={openForm} />
+      <FloatingCallButton />
       <RepairForm open={formOpen} onClose={() => setFormOpen(false)} />
     </LanguageProvider>
   );

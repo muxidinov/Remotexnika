@@ -1,7 +1,60 @@
 'use client';
 
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+
+/**
+ * Fail-safe "animate in when scrolled into view" hook.
+ *
+ * Framer Motion's built-in `whileInView` relies on IntersectionObserver and,
+ * when that never fires, content is left stuck at `opacity: 0` and becomes
+ * permanently invisible. This hook keeps the reveal animation but guarantees
+ * that content always becomes visible:
+ *  - it starts visible during SSR / before hydration (no flash of blank page),
+ *  - it uses a native IntersectionObserver when available,
+ *  - and it falls back to revealing after a short timeout as a safety net.
+ */
+function useRevealInView<T extends HTMLElement>(delay = 0) {
+  const ref = useRef<T | null>(null);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setVisible(true);
+      return;
+    }
+
+    // Hide then reveal so the animation still plays, but never leaves it hidden.
+    setVisible(false);
+
+    let revealed = false;
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
+      setVisible(true);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) reveal();
+      },
+      { rootMargin: '0px 0px -60px 0px', threshold: 0.01 }
+    );
+    observer.observe(el);
+
+    // Safety net: if the observer never fires (some browsers/embeds), reveal
+    // anyway so content is never permanently hidden.
+    const fallback = window.setTimeout(reveal, 700 + delay * 1000);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(fallback);
+    };
+  }, [delay]);
+
+  return { ref, visible };
+}
 
 interface RevealProps {
   children: ReactNode;
@@ -16,9 +69,9 @@ export function Reveal({
   delay = 0,
   y = 24,
   className,
-  once = true,
 }: RevealProps) {
   const prefersReduced = useReducedMotion();
+  const { ref, visible } = useRevealInView<HTMLDivElement>(delay);
 
   if (prefersReduced) {
     return <div className={className}>{children}</div>;
@@ -26,10 +79,10 @@ export function Reveal({
 
   return (
     <motion.div
+      ref={ref}
       className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, margin: '-80px' }}
+      initial={false}
+      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y }}
       transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
@@ -51,6 +104,7 @@ export function StaggerContainer({
   stagger = 0.08,
 }: StaggerProps) {
   const prefersReduced = useReducedMotion();
+  const { ref, visible } = useRevealInView<HTMLDivElement>(delay);
 
   const variants: Variants = {
     hidden: { opacity: 0 },
@@ -69,11 +123,11 @@ export function StaggerContainer({
 
   return (
     <motion.div
+      ref={ref}
       className={className}
       variants={variants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-60px' }}
+      initial={false}
+      animate={visible ? 'visible' : 'hidden'}
     >
       {children}
     </motion.div>
@@ -183,8 +237,6 @@ function CountUp({
     </motion.span>
   );
 }
-
-import { useEffect, useState } from 'react';
 
 function SimpleCountUp({
   value,

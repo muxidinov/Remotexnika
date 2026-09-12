@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { quickRequestSchema, repairRequestSchema } from '@/lib/validation';
+import { repairRequestSchema } from '@/lib/validation';
 import { getApplianceLabel } from '@/lib/constants';
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -63,11 +63,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const quickParsed = quickRequestSchema.safeParse(body);
-  const repairParsed = quickParsed.success ? null : repairRequestSchema.safeParse(body);
+  const parsed = repairRequestSchema.safeParse(body);
 
-  if (!quickParsed.success && (!repairParsed || !repairParsed.success)) {
-    const firstError = repairParsed?.success ? undefined : repairParsed?.error.issues[0];
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0];
     return NextResponse.json(
       { error: firstError?.message || 'Проверьте правильность заполнения формы.' },
       { status: 400, headers: corsHeaders }
@@ -77,36 +76,24 @@ export async function POST(req: NextRequest) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  // Build the Telegram message
-  let message: string;
-  if (quickParsed.success) {
-    const data = quickParsed.data;
-    message = [
-        '🔧 <b>НОВАЯ БЫСТРАЯ ЗАЯВКА</b>',
-        '',
-        `👤 <b>Клиент:</b> ${escapeHtml(data.name)} ${escapeHtml(data.surname)}`,
-        `📱 <b>Телефон:</b> ${escapeHtml(data.phone)}`,
-        `🔧 <b>Техника:</b> ${escapeHtml(getApplianceLabel(data.appliance))}`,
-      ].join('\n')
-  } else {
-    const data = repairParsed!.data!;
-    const applianceLabel = getApplianceLabel(data.appliance);
-    message = [
-        '🔧 <b>НОВАЯ ЗАЯВКА</b>',
-        '',
-        `👤 <b>Клиент:</b> ${escapeHtml(data.name)}`,
-        `📱 <b>Телефон:</b> ${escapeHtml(data.phone)}`,
-        `🔧 <b>Техника:</b> ${escapeHtml(applianceLabel)}`,
-        `⚠️ <b>Проблема:</b> ${escapeHtml(data.problem)}`,
-        `📍 <b>Адрес:</b> ${escapeHtml(data.address)}`,
-        `🕐 <b>Удобное время:</b> ${escapeHtml(data.preferredTime)}`,
-        data.comment && data.comment.trim().length > 0
-          ? `💬 <b>Комментарий:</b> ${escapeHtml(data.comment)}`
-          : '',
-      ]
-        .filter(Boolean)
-        .join('\n');
-  }
+  // Build the Telegram message from the single request form
+  const data = parsed.data;
+  const applianceLabel = getApplianceLabel(data.appliance);
+  const message = [
+      '🔧 <b>НОВАЯ ЗАЯВКА</b>',
+      '',
+      `👤 <b>Клиент:</b> ${escapeHtml(data.name)}`,
+      `📱 <b>Телефон:</b> ${escapeHtml(data.phone)}`,
+      `🔧 <b>Техника:</b> ${escapeHtml(applianceLabel)}`,
+      `⚠️ <b>Проблема:</b> ${escapeHtml(data.problem)}`,
+      `📍 <b>Адрес:</b> ${escapeHtml(data.address)}`,
+      `🕐 <b>Удобное время:</b> ${escapeHtml(data.preferredTime)}`,
+      data.comment && data.comment.trim().length > 0
+        ? `💬 <b>Комментарий:</b> ${escapeHtml(data.comment)}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
 
   // If Telegram credentials are not configured, log the message and return success
   // (useful for development/staging — the form still works for testing)

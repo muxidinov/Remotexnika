@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -45,8 +46,6 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
   const [step, setStep] = useState<Step>(1);
   const [selectedAppliance, setSelectedAppliance] = useState<ApplianceKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { t } = useLanguage();
   const stepTitles: Record<Step, string> = {
     1: t('form.step1'),
@@ -61,6 +60,7 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
     trigger,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<RepairRequest>({
     resolver: zodResolver(repairRequestSchema),
@@ -85,6 +85,8 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
 
   const handleApplianceSelect = (key: ApplianceKey) => {
     setSelectedAppliance(key);
+    // Keep react-hook-form in sync so zod validation passes on submit
+    setValue('appliance', key, { shouldValidate: true, shouldDirty: true });
   };
 
   const handleStep1Next = async () => {
@@ -92,8 +94,7 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
       toast.error(t('form.selectAppliance'));
       return;
     }
-    // Set the appliance value in form
-    // We need to manually set it since it's not a form input
+    setValue('appliance', selectedAppliance, { shouldValidate: true });
     setStep(2);
   };
 
@@ -113,7 +114,6 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
 
   const onValidSubmit = async (data: RepairRequest) => {
     setSubmitting(true);
-    setSubmitError(null);
 
     try {
       const payload = { ...data, appliance: selectedAppliance || data.appliance };
@@ -129,12 +129,10 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
         throw new Error(result.error || t('quick.submit'));
       }
 
-      setSubmitSuccess(true);
       setStep(4);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : t('quick.submit');
-      setSubmitError(message);
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -148,18 +146,18 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
       reset();
       setSelectedAppliance(null);
       setStep(1);
-      setSubmitSuccess(false);
-      setSubmitError(null);
     }, 300);
   };
+
+  const handleSubmitForm = handleSubmit(onValidSubmit, () => {
+    toast.error(t('form.validation'));
+  });
 
   const canProceedStep3 =
     nameValue?.length >= 2 &&
     phoneValue?.length >= 9 &&
     addressValue?.length >= 5 &&
     timeValue?.length >= 3;
-
-  const progress = (step / 4) * 100;
 
   return (
     <AnimatePresence>
@@ -494,7 +492,7 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
                 {step === 3 && (
                   <Button
                     type="button"
-                    onClick={handleSubmit(onValidSubmit)}
+                    onClick={handleSubmitForm}
                     disabled={submitting || !canProceedStep3}
                     className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
@@ -520,22 +518,10 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
   );
 }
 
-function FormField({
-  id,
-  label,
-  icon,
-  error,
-  type = 'text',
-  placeholder,
-  ...props
-}: {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  error?: string;
-  type?: string;
-  placeholder?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(function FormField(
+  { id, label, icon, error, type = 'text', placeholder, ...props },
+  ref
+) {
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={id} className="text-sm font-medium text-foreground">
@@ -547,6 +533,7 @@ function FormField({
         </div>
         <Input
           id={id}
+          ref={ref}
           type={type}
           placeholder={placeholder}
           className={cn(
@@ -564,7 +551,16 @@ function FormField({
       )}
     </div>
   );
-}
+});
+
+type FormFieldProps = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  error?: string;
+  type?: string;
+  placeholder?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
