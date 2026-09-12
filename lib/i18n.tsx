@@ -1,0 +1,109 @@
+'use client';
+
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
+export const languages = ['ru', 'uz', 'en'] as const;
+export type Language = (typeof languages)[number];
+
+export const languageNames: Record<Language, string> = {
+  ru: 'Русский',
+  uz: "O‘zbekcha",
+  en: 'English',
+};
+
+type Dictionary = Record<string, string>;
+
+const ru: Dictionary = {
+  'brand.tagline': 'Ремонт бытовой техники',
+  'nav.services': 'Услуги', 'nav.pricing': 'Цены', 'nav.how': 'Как работаем', 'nav.reviews': 'Отзывы', 'nav.faq': 'FAQ', 'nav.contact': 'Контакты',
+  'action.book': 'Вызвать мастера', 'action.next': 'Далее', 'action.back': 'Назад', 'action.close': 'Закрыть', 'action.submit': 'Отправить заявку',
+  'menu.open': 'Открыть меню', 'menu.close': 'Закрыть меню', 'menu.title': 'Меню',
+  'hero.open': 'Работаем сейчас', 'hero.title': 'Ремонт бытовой техники', 'hero.titleAccent': 'с выездом на дом',
+  'hero.description': 'Мастер приедет в удобное для вас время, проведёт диагностику и быстро устранит неисправность. Честные цены и гарантия на все работы.',
+  'hero.services': 'Посмотреть услуги', 'hero.fast': 'Выезд за 1–2 часа', 'hero.warranty': 'Гарантия до 12 мес.', 'hero.reviews': '4.9 — 500+ отзывов', 'hero.diagnostics': 'Диагностика', 'hero.from50': 'от 50 000 сум', 'hero.rating': 'Рейтинг',
+  'quick.eyebrow': 'Быстрая заявка', 'quick.title': 'Нужен ремонт холодильника или стиральной машины?', 'quick.description': 'Оставьте контакты — мы перезвоним в течение 15 минут.',
+  'quick.appliance': 'Выберите технику', 'quick.refrigerator': 'Холодильник', 'quick.washer': 'Стиральная машина', 'quick.name': 'Имя', 'quick.surname': 'Фамилия', 'quick.phone': 'Телефон',
+  'quick.namePlaceholder': 'Ваше имя', 'quick.surnamePlaceholder': 'Ваша фамилия', 'quick.phonePlaceholder': '+998 90 123 45 67', 'quick.submit': 'Оставить заявку', 'quick.sending': 'Отправляем…', 'quick.success': 'Спасибо! Заявка принята, мы скоро свяжемся с вами.', 'quick.validation': 'Введите имя, фамилию и корректный номер телефона.', 'quick.failed': 'Не удалось отправить заявку. Попробуйте позже.',
+  'services.eyebrow': 'Наши услуги', 'services.title': 'Ремонтируем любую бытовую технику', 'services.description': 'Полный спектр услуг по ремонту домашней техники. Мастер приезжает с инструментами и запчастями — большинство поломок устраняем на месте за один визит.', 'services.order': 'Заказать ремонт', 'services.from': 'от', 'services.currency': 'сум', 'services.other': 'Не нашли свою технику? Мы также ремонтируем сушильные машины, вытяжки, микроволновки, водонагреватели и другую бытовую технику.',
+  'pricing.eyebrow': 'Цены', 'pricing.title': 'Прозрачные цены без скрытых платежей', 'pricing.description': 'Окончательная стоимость зависит от сложности ремонта и необходимых запчастей. Мастер называет точную цену после диагностики — вы заранее знаете, за что платите.', 'pricing.hit': 'Хит', 'pricing.how': 'Как формируется стоимость?', 'pricing.howText': 'Итоговая цена состоит из стоимости работ и цены запчастей. После диагностики мастер составляет смету и согласовывает её с вами. Ремонт начнётся только после вашего подтверждения.',
+  'why.eyebrow': 'Почему мы', 'why.title': 'Почему клиенты выбирают ТехМастер', 'why.description': 'Мы не просто чиним технику — мы заботимся о том, чтобы вы остались довольны результатом. Прозрачные цены, опытные мастера и гарантия на каждый ремонт.',
+  'stat.repairs': 'Ремонтов выполнено', 'stat.experience': 'Опыт работы', 'stat.warranty': 'Гарантия на работы', 'stat.response': 'Среднее время отклика',
+  'how.eyebrow': 'Как мы работаем', 'how.title': 'Четыре простых шага', 'how.description': 'От заявки до работающей техники — весь процесс занимает минимум вашего времени и усилий.',
+  'brands.title': 'Ремонтируем технику всех популярных брендов',
+  'reviews.eyebrow': 'Отзывы', 'reviews.title': 'Что говорят наши клиенты', 'reviews.description': 'Более 500 довольных клиентов по всему Ташкенту. Мы дорожим своей репутацией и работаем на совесть.', 'reviews.count': 'отзывов',
+  'faq.eyebrow': 'Вопросы и ответы', 'faq.title': 'Часто задаваемые вопросы', 'faq.description': 'Собрали ответы на самые популярные вопросы. Не нашли нужный? Позвоните нам — мы с радостью ответим.',
+  'contact.eyebrow': 'Контакты', 'contact.title': 'Свяжитесь с нами', 'contact.description': 'Позвоните, напишите в Telegram или оставьте заявку — мы ответим быстро и поможем решить проблему с вашей техникой.', 'contact.phone': 'Телефон', 'contact.hours': 'Часы работы', 'contact.area': 'Зона обслуживания', 'contact.go': 'Перейти', 'contact.urgent': 'Нужен срочный ремонт?', 'contact.urgentText': 'Оставьте заявку — мастер приедет в течение 1–2 часов', 'contact.hoursValue': 'Ежедневно с 8:00 до 21:00', 'contact.areaValue': 'Весь Ташкент и пригород',
+  'footer.description': 'Профессиональный ремонт бытовой техники в Ташкенте. Быстрый выезд, честные цены, гарантия на все работы.', 'footer.services': 'Услуги', 'footer.navigation': 'Навигация', 'footer.contacts': 'Контакты', 'footer.rights': 'Все права защищены.', 'footer.privacy': 'Политика конфиденциальности', 'footer.terms': 'Условия использования',
+  'form.title': 'Заявка на ремонт', 'form.step1': 'Что нужно отремонтировать?', 'form.step2': 'Что произошло?', 'form.step3': 'Ваши контакты', 'form.step': 'Шаг', 'form.of': 'из 3', 'form.selectAppliance': 'Выберите технику для ремонта', 'form.selected': 'Выбранная техника', 'form.problem': 'Опишите проблему', 'form.problemPlaceholder': 'Например: холодильник не морозит, внизу собирается вода, мотор работает без остановки…', 'form.problemHint': 'Подробное описание поможет мастеру подготовиться', 'form.fullName': 'Имя и фамилия', 'form.fullNamePlaceholder': 'Ваше имя и фамилия', 'form.address': 'Адрес', 'form.addressPlaceholder': 'Район, улица, дом, квартира', 'form.time': 'Удобное время', 'form.timePlaceholder': 'Например: сегодня после 18:00', 'form.comment': 'Дополнительный комментарий', 'form.optional': 'необязательно', 'form.commentPlaceholder': 'Любая дополнительная информация…', 'form.sending': 'Отправляем…', 'form.successTitle': 'Заявка отправлена!', 'form.successText': 'Спасибо! Мы получили вашу заявку и свяжемся с вами в течение 15 минут для уточнения деталей и назначения времени визита мастера.', 'form.summaryAppliance': 'Техника', 'form.summaryName': 'Имя', 'form.summaryPhone': 'Телефон', 'form.summaryAddress': 'Адрес', 'form.summaryTime': 'Время',
+  'appliance.refrigerator': 'Холодильник', 'appliance.washing_machine': 'Стиральная машина', 'appliance.dishwasher': 'Посудомоечная машина', 'appliance.stove': 'Плита', 'appliance.oven': 'Духовка', 'appliance.air_conditioner': 'Кондиционер', 'appliance.other': 'Другая техника',
+};
+
+const en: Dictionary = {
+  'brand.tagline': 'Home appliance repair', 'nav.services': 'Services', 'nav.pricing': 'Pricing', 'nav.how': 'How it works', 'nav.reviews': 'Reviews', 'nav.faq': 'FAQ', 'nav.contact': 'Contact', 'action.book': 'Book a technician', 'action.next': 'Next', 'action.back': 'Back', 'action.close': 'Close', 'action.submit': 'Send request', 'menu.open': 'Open menu', 'menu.close': 'Close menu', 'menu.title': 'Menu',
+  'hero.open': 'Open now', 'hero.title': 'Home appliance repair', 'hero.titleAccent': 'at your home', 'hero.description': 'A technician will arrive at a convenient time, diagnose the issue and fix it quickly. Fair prices and a warranty on every repair.', 'hero.services': 'View services', 'hero.fast': 'Arrival in 1–2 hours', 'hero.warranty': 'Up to 12 months warranty', 'hero.reviews': '4.9 — 500+ reviews', 'hero.diagnostics': 'Diagnostics', 'hero.from50': 'from 50,000 UZS', 'hero.rating': 'Rating',
+  'quick.eyebrow': 'Quick request', 'quick.title': 'Need refrigerator or washing-machine repair?', 'quick.description': 'Leave your details and we will call you back within 15 minutes.', 'quick.appliance': 'Choose an appliance', 'quick.refrigerator': 'Refrigerator', 'quick.washer': 'Washing machine', 'quick.name': 'First name', 'quick.surname': 'Last name', 'quick.phone': 'Phone number', 'quick.namePlaceholder': 'Your first name', 'quick.surnamePlaceholder': 'Your last name', 'quick.phonePlaceholder': '+998 90 123 45 67', 'quick.submit': 'Request a call', 'quick.sending': 'Sending…', 'quick.success': 'Thank you! Your request is in, and we will contact you shortly.', 'quick.validation': 'Enter your first name, last name and a valid phone number.', 'quick.failed': 'Unable to send your request. Please try again later.',
+  'services.eyebrow': 'Our services', 'services.title': 'We repair every major home appliance', 'services.description': 'A full range of household-appliance repair services. The technician arrives with tools and parts, so most issues are resolved in one visit.', 'services.order': 'Book repair', 'services.from': 'from', 'services.currency': 'UZS', 'services.other': 'Cannot find your appliance? We also repair dryers, extractors, microwaves, water heaters and other household appliances.',
+  'pricing.eyebrow': 'Pricing', 'pricing.title': 'Clear pricing with no hidden charges', 'pricing.description': 'The final price depends on the repair complexity and required parts. Your technician names the exact price after diagnostics, so you know what you are paying for.', 'pricing.hit': 'Popular', 'pricing.how': 'How is the price calculated?', 'pricing.howText': 'The final amount includes labour and spare parts. After diagnostics, the technician prepares an estimate and agrees it with you. Repair begins only after your approval.',
+  'why.eyebrow': 'Why us', 'why.title': 'Why customers choose TehMaster', 'why.description': 'We do more than repair appliances — we make sure you are happy with the result. Clear prices, experienced technicians and a warranty on every repair.', 'stat.repairs': 'Repairs completed', 'stat.experience': 'Years of experience', 'stat.warranty': 'Warranty on repairs', 'stat.response': 'Average response time',
+  'how.eyebrow': 'How we work', 'how.title': 'Four simple steps', 'how.description': 'From request to a working appliance — the whole process takes as little of your time and effort as possible.', 'brands.title': 'We repair appliances from all popular brands', 'reviews.eyebrow': 'Reviews', 'reviews.title': 'What our customers say', 'reviews.description': 'More than 500 happy customers across Tashkent. We value our reputation and take pride in our work.', 'reviews.count': 'reviews', 'faq.eyebrow': 'Questions and answers', 'faq.title': 'Frequently asked questions', 'faq.description': 'We collected answers to common questions. Cannot find yours? Call us — we will be glad to help.',
+  'contact.eyebrow': 'Contact', 'contact.title': 'Get in touch', 'contact.description': 'Call, message us on Telegram or leave a request — we will respond quickly and help solve your appliance problem.', 'contact.phone': 'Phone', 'contact.hours': 'Working hours', 'contact.area': 'Service area', 'contact.go': 'Open', 'contact.urgent': 'Need urgent repair?', 'contact.urgentText': 'Leave a request — a technician can arrive within 1–2 hours', 'contact.hoursValue': 'Daily, 8:00–21:00', 'contact.areaValue': 'All Tashkent and suburbs',
+  'footer.description': 'Professional home appliance repair in Tashkent. Fast arrival, fair prices and a warranty on every repair.', 'footer.services': 'Services', 'footer.navigation': 'Navigation', 'footer.contacts': 'Contact', 'footer.rights': 'All rights reserved.', 'footer.privacy': 'Privacy policy', 'footer.terms': 'Terms of use',
+  'form.title': 'Repair request', 'form.step1': 'What needs repair?', 'form.step2': 'What happened?', 'form.step3': 'Your contact details', 'form.step': 'Step', 'form.of': 'of 3', 'form.selectAppliance': 'Choose an appliance for repair', 'form.selected': 'Selected appliance', 'form.problem': 'Describe the issue', 'form.problemPlaceholder': 'For example: the refrigerator is not cooling, water is collecting below, the motor runs without stopping…', 'form.problemHint': 'A detailed description helps the technician prepare', 'form.fullName': 'Full name', 'form.fullNamePlaceholder': 'Your first and last name', 'form.address': 'Address', 'form.addressPlaceholder': 'District, street, building, apartment', 'form.time': 'Preferred time', 'form.timePlaceholder': 'For example: today after 18:00', 'form.comment': 'Additional comment', 'form.optional': 'optional', 'form.commentPlaceholder': 'Any additional information…', 'form.sending': 'Sending…', 'form.successTitle': 'Request sent!', 'form.successText': 'Thank you! We received your request and will contact you within 15 minutes to confirm the details and schedule your technician.', 'form.summaryAppliance': 'Appliance', 'form.summaryName': 'Name', 'form.summaryPhone': 'Phone', 'form.summaryAddress': 'Address', 'form.summaryTime': 'Time',
+  'appliance.refrigerator': 'Refrigerator', 'appliance.washing_machine': 'Washing machine', 'appliance.dishwasher': 'Dishwasher', 'appliance.stove': 'Cooker', 'appliance.oven': 'Oven', 'appliance.air_conditioner': 'Air conditioner', 'appliance.other': 'Other appliance',
+};
+
+const uz: Dictionary = {
+  'brand.tagline': 'Maishiy texnika ta’miri', 'nav.services': 'Xizmatlar', 'nav.pricing': 'Narxlar', 'nav.how': 'Qanday ishlaymiz', 'nav.reviews': 'Sharhlar', 'nav.faq': 'Savollar', 'nav.contact': 'Aloqa', 'action.book': 'Ustani chaqirish', 'action.next': 'Keyingi', 'action.back': 'Ortga', 'action.close': 'Yopish', 'action.submit': 'Ariza yuborish', 'menu.open': 'Menyuni ochish', 'menu.close': 'Menyuni yopish', 'menu.title': 'Menyu',
+  'hero.open': 'Hozir ishlaymiz', 'hero.title': 'Maishiy texnika ta’miri', 'hero.titleAccent': 'uyga borib', 'hero.description': 'Usta sizga qulay vaqtda keladi, nosozlikni aniqlaydi va tezda bartaraf etadi. Halol narxlar hamda barcha ishlarga kafolat.', 'hero.services': 'Xizmatlarni ko‘rish', 'hero.fast': '1–2 soatda yetib boramiz', 'hero.warranty': '12 oygacha kafolat', 'hero.reviews': '4.9 — 500+ sharh', 'hero.diagnostics': 'Diagnostika', 'hero.from50': '50 000 so‘mdan', 'hero.rating': 'Reyting',
+  'quick.eyebrow': 'Tezkor ariza', 'quick.title': 'Muzlatgich yoki kir yuvish mashinasi buzildimi?', 'quick.description': 'Ma’lumotlaringizni qoldiring — 15 daqiqa ichida sizga qo‘ng‘iroq qilamiz.', 'quick.appliance': 'Texnikani tanlang', 'quick.refrigerator': 'Muzlatgich', 'quick.washer': 'Kir yuvish mashinasi', 'quick.name': 'Ism', 'quick.surname': 'Familiya', 'quick.phone': 'Telefon raqami', 'quick.namePlaceholder': 'Ismingiz', 'quick.surnamePlaceholder': 'Familiyangiz', 'quick.phonePlaceholder': '+998 90 123 45 67', 'quick.submit': 'Ariza qoldirish', 'quick.sending': 'Yuborilmoqda…', 'quick.success': 'Rahmat! Arizangiz qabul qilindi, tez orada siz bilan bog‘lanamiz.', 'quick.validation': 'Ism, familiya va to‘g‘ri telefon raqamini kiriting.', 'quick.failed': 'Arizani yuborib bo‘lmadi. Keyinroq urinib ko‘ring.',
+  'services.eyebrow': 'Xizmatlarimiz', 'services.title': 'Har qanday maishiy texnikani ta’mirlaymiz', 'services.description': 'Uy texnikasini ta’mirlash bo‘yicha to‘liq xizmatlar. Usta asbob va ehtiyot qismlar bilan keladi — ko‘p nosozliklar bir tashrifda bartaraf etiladi.', 'services.order': 'Ta’mir buyurtma qilish', 'services.from': 'dan', 'services.currency': 'so‘m', 'services.other': 'Kerakli texnikani topmadingizmi? Quritgichlar, dudburonlar, mikroto‘lqinli pechlar, suv isitgichlar va boshqa texnikalarni ham ta’mirlaymiz.',
+  'pricing.eyebrow': 'Narxlar', 'pricing.title': 'Yashirin to‘lovlarsiz aniq narxlar', 'pricing.description': 'Yakuniy narx ta’mir murakkabligi va ehtiyot qismlarga bog‘liq. Usta diagnostikadan keyin aniq narxni aytadi — nimaga to‘layotganingizni oldindan bilasiz.', 'pricing.hit': 'Mashhur', 'pricing.how': 'Narx qanday shakllanadi?', 'pricing.howText': 'Yakuniy narx ish haqi va ehtiyot qismlar narxidan iborat. Diagnostikadan so‘ng usta smeta tuzadi va siz bilan kelishadi. Ta’mir faqat tasdiqlashingizdan keyin boshlanadi.',
+  'why.eyebrow': 'Nega biz', 'why.title': 'Nega mijozlar TehMasterni tanlaydi', 'why.description': 'Biz faqat texnikani tuzatmaymiz — natijadan mamnun bo‘lishingizga g‘amxo‘rlik qilamiz. Shaffof narxlar, tajribali ustalar va har bir ta’mirga kafolat.', 'stat.repairs': 'Bajarilgan ta’mirlar', 'stat.experience': 'Ish tajribasi', 'stat.warranty': 'Ishlarga kafolat', 'stat.response': 'O‘rtacha javob vaqti',
+  'how.eyebrow': 'Qanday ishlaymiz', 'how.title': 'To‘rtta oddiy qadam', 'how.description': 'Arizadan ishlaydigan texnikagacha — jarayon sizning vaqtingiz va kuchingizni imkon qadar kam oladi.', 'brands.title': 'Barcha mashhur brendlar texnikasini ta’mirlaymiz', 'reviews.eyebrow': 'Sharhlar', 'reviews.title': 'Mijozlarimiz nima deydi', 'reviews.description': 'Toshkent bo‘ylab 500 dan ortiq mamnun mijoz. Obro‘yimizni qadrlaymiz va ishimizga mas’uliyat bilan yondashamiz.', 'reviews.count': 'sharh', 'faq.eyebrow': 'Savol-javoblar', 'faq.title': 'Ko‘p beriladigan savollar', 'faq.description': 'Eng mashhur savollarga javoblarni jamladik. Keraklisini topmadingizmi? Qo‘ng‘iroq qiling — mamnuniyat bilan javob beramiz.',
+  'contact.eyebrow': 'Aloqa', 'contact.title': 'Biz bilan bog‘laning', 'contact.description': 'Qo‘ng‘iroq qiling, Telegram’da yozing yoki ariza qoldiring — tez javob beramiz va texnikangiz muammosini hal qilishga yordam beramiz.', 'contact.phone': 'Telefon', 'contact.hours': 'Ish vaqti', 'contact.area': 'Xizmat hududi', 'contact.go': 'O‘tish', 'contact.urgent': 'Shoshilinch ta’mir kerakmi?', 'contact.urgentText': 'Ariza qoldiring — usta 1–2 soatda yetib boradi', 'contact.hoursValue': 'Har kuni 8:00 dan 21:00 gacha', 'contact.areaValue': 'Butun Toshkent va shahar atrofi',
+  'footer.description': 'Toshkentda maishiy texnikani professional ta’mirlash. Tez yetib borish, halol narxlar va barcha ishlarga kafolat.', 'footer.services': 'Xizmatlar', 'footer.navigation': 'Menyu', 'footer.contacts': 'Aloqa', 'footer.rights': 'Barcha huquqlar himoyalangan.', 'footer.privacy': 'Maxfiylik siyosati', 'footer.terms': 'Foydalanish shartlari',
+  'form.title': 'Ta’mir uchun ariza', 'form.step1': 'Nimani ta’mirlash kerak?', 'form.step2': 'Nima sodir bo‘ldi?', 'form.step3': 'Aloqa ma’lumotlaringiz', 'form.step': 'Qadam', 'form.of': '3 dan', 'form.selectAppliance': 'Ta’mir uchun texnikani tanlang', 'form.selected': 'Tanlangan texnika', 'form.problem': 'Muammoni tasvirlang', 'form.problemPlaceholder': 'Masalan: muzlatgich sovutmayapti, pastida suv yig‘ilmoqda, motor to‘xtamasdan ishlayapti…', 'form.problemHint': 'Batafsil tavsif ustaga oldindan tayyorlanishga yordam beradi', 'form.fullName': 'Ism va familiya', 'form.fullNamePlaceholder': 'Ismingiz va familiyangiz', 'form.address': 'Manzil', 'form.addressPlaceholder': 'Tuman, ko‘cha, uy, xonadon', 'form.time': 'Qulay vaqt', 'form.timePlaceholder': 'Masalan: bugun 18:00 dan keyin', 'form.comment': 'Qo‘shimcha izoh', 'form.optional': 'ixtiyoriy', 'form.commentPlaceholder': 'Boshqa qo‘shimcha ma’lumot…', 'form.sending': 'Yuborilmoqda…', 'form.successTitle': 'Ariza yuborildi!', 'form.successText': 'Rahmat! Arizangizni oldik va tafsilotlarni aniqlash hamda usta tashrifi vaqtini belgilash uchun 15 daqiqa ichida bog‘lanamiz.', 'form.summaryAppliance': 'Texnika', 'form.summaryName': 'Ism', 'form.summaryPhone': 'Telefon', 'form.summaryAddress': 'Manzil', 'form.summaryTime': 'Vaqt',
+  'appliance.refrigerator': 'Muzlatgich', 'appliance.washing_machine': 'Kir yuvish mashinasi', 'appliance.dishwasher': 'Idish yuvish mashinasi', 'appliance.stove': 'Plita', 'appliance.oven': 'Duxovka', 'appliance.air_conditioner': 'Konditsioner', 'appliance.other': 'Boshqa texnika',
+};
+
+const dictionaries: Record<Language, Dictionary> = { ru, uz, en };
+
+export function translate(language: Language, key: string): string {
+  return dictionaries[language][key] ?? ru[key] ?? key;
+}
+
+interface LanguageContextValue {
+  language: Language;
+  setLanguage: (language: Language) => void;
+  t: (key: string) => string;
+}
+
+const LanguageContext = createContext<LanguageContextValue | null>(null);
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguage] = useState<Language>('ru');
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem('tehmaster-language') as Language | null;
+    if (saved && languages.includes(saved)) setLanguage(saved);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    window.localStorage.setItem('tehmaster-language', language);
+  }, [language]);
+
+  const value = useMemo(() => ({
+    language,
+    setLanguage,
+    t: (key: string) => translate(language, key),
+  }), [language]);
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+}
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (!context) throw new Error('useLanguage must be used within LanguageProvider');
+  return context;
+}
