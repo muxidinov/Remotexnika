@@ -208,11 +208,27 @@ function ReviewForm({ onSubmitted, onCancel }: ReviewFormProps) {
           text: text.trim(),
         }),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || t('reviews.formFailed'));
+      const result = (await response.json().catch(() => null)) as
+        | { error?: string; review?: Review }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(result?.error || t('reviews.formFailed'));
+      }
 
       setSuccess(true);
-      onSubmitted(result.review as Review);
+      // Fall back to the local values if the API did not echo the review back.
+      onSubmitted(
+        result?.review ?? {
+          id: `${Date.now()}`,
+          name: name.trim(),
+          rating,
+          appliance: appliance.trim(),
+          location: location.trim(),
+          text: text.trim(),
+          date: new Date().toISOString().slice(0, 10),
+        }
+      );
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : t('reviews.formFailed'));
     } finally {

@@ -18,6 +18,7 @@ import {
   MessageSquare,
   User,
   Wrench,
+  Crosshair,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,11 +42,16 @@ interface RepairFormProps {
 
 type Step = 1 | 2 | 3 | 4;
 
+type LocationStatus = 'idle' | 'loading' | 'ready' | 'error';
+
 export function RepairForm({ open, onClose }: RepairFormProps) {
   const prefersReduced = useReducedMotion();
   const [step, setStep] = useState<Step>(1);
   const [selectedAppliance, setSelectedAppliance] = useState<ApplianceKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+  const [locationMessage, setLocationMessage] = useState('');
   const { t } = useLanguage();
   const stepTitles: Record<Step, string> = {
     1: t('form.step1'),
@@ -116,7 +122,12 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
     setSubmitting(true);
 
     try {
-      const payload = { ...data, appliance: selectedAppliance || data.appliance };
+      const payload = {
+        ...data,
+        appliance: selectedAppliance || data.appliance,
+        latitude: coords?.latitude,
+        longitude: coords?.longitude,
+      };
       const response = await fetch('/api/repair-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,12 +150,52 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
     }
   };
 
+  const handleRequestLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationStatus('error');
+      setLocationMessage(t('form.locationUnsupported'));
+      return;
+    }
+
+    setLocationStatus('loading');
+    setLocationMessage('');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          latitude: Number(position.coords.latitude.toFixed(6)),
+          longitude: Number(position.coords.longitude.toFixed(6)),
+        });
+        setLocationStatus('ready');
+        setLocationMessage(t('form.locationReady'));
+      },
+      (geoError) => {
+        setLocationStatus('error');
+        setLocationMessage(
+          geoError.code === geoError.PERMISSION_DENIED
+            ? t('form.locationDenied')
+            : t('form.locationError')
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  const handleClearLocation = () => {
+    setCoords(null);
+    setLocationStatus('idle');
+    setLocationMessage('');
+  };
+
   const handleClose = () => {
     onClose();
     // Reset after animation
     setTimeout(() => {
       reset();
       setSelectedAppliance(null);
+      setCoords(null);
+      setLocationStatus('idle');
+      setLocationMessage('');
       setStep(1);
     }, 300);
   };
@@ -373,6 +424,60 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
                         error={errors.address?.message}
                         {...register('address')}
                       />
+
+                      {/* Optional GPS location — does not block the rest of the form */}
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-sm font-medium text-foreground">
+                          {t('form.location')}{' '}
+                          <span className="text-muted-foreground">({t('form.optional')})</span>
+                        </Label>
+                        {coords && locationStatus === 'ready' ? (
+                          <div className="flex items-center justify-between gap-3 rounded-lg border-success/30 bg-success/5 px-3 py-2">
+                            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                              <CheckCircle2 className="h-4 w-4 text-success" />
+                              {locationMessage || t('form.locationReady')}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleClearLocation}
+                              className="shrink-0 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              {t('form.locationClear')}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleRequestLocation}
+                            disabled={locationStatus === 'loading'}
+                            className={cn(
+                              'flex items-center justify-center gap-2 rounded-lg border-border py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60'
+                            )}
+                          >
+                            {locationStatus === 'loading' ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                {t('form.locationGetting')}
+                              </>
+                            ) : (
+                              <>
+                                <Crosshair className="h-4 w-4" />
+                                {t('form.locationGet')}
+                              </>
+                            )}
+                          </button>
+                        )}
+                        {locationStatus === 'error' && locationMessage ? (
+                          <span className="flex items-center gap-1.5 text-xs text-destructive">
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            {locationMessage}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {t('form.locationHint')}
+                          </span>
+                        )}
+                      </div>
                       <FormField
                         id="preferredTime"
                         label={t('form.time')}
@@ -439,6 +544,12 @@ export function RepairForm({ open, onClose }: RepairFormProps) {
                         <SummaryRow label={t('form.summaryPhone')} value={phoneValue || ''} />
                         {addressValue && <SummaryRow label={t('form.summaryAddress')} value={addressValue} />}
                         {timeValue && <SummaryRow label={t('form.summaryTime')} value={timeValue} />}
+                        {coords && (
+                          <SummaryRow
+                            label={t('form.summaryLocation')}
+                            value={`${coords.latitude}, ${coords.longitude}`}
+                          />
+                        )}
                       </div>
 
                       <Button

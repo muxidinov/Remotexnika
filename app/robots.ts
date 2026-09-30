@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/'],
     },
-    sitemap: 'https://tehmaster.uz/sitemap.xml',
+    sitemap: 'https://remontexnika.uz/sitemap.xml',
   };
 }

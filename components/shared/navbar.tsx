@@ -55,17 +55,21 @@ export function Navbar({ onBookClick }: NavbarProps) {
         )}
       >
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
-          {/* Logo */}
+          {/* Logo — hidden on mobile while the mobile menu is open */}
           <a
             href="#"
             onClick={(e) => handleNavClick(e, '#hero')}
-            className="flex items-center gap-2.5"
+            className={cn('flex items-center gap-2.5', mobileOpen && 'hidden lg:flex')}
             aria-label="ТехМастер"
           >
+
+            
             <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 lg:h-10 lg:w-10">
               <Wrench className="h-5 w-5 lg:h-6 lg:w-6" />
               <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent ring-2 ring-background" />
             </div>
+
+
             <div className="flex flex-col leading-none">
               <span className="font-display text-lg font-bold tracking-tight text-foreground lg:text-xl">
                 ТехМастер
@@ -110,15 +114,17 @@ export function Navbar({ onBookClick }: NavbarProps) {
             </Button>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground lg:hidden"
-            aria-label={mobileOpen ? t('menu.close') : t('menu.open')}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          {/* Mobile menu button — hidden while the menu is open (the drawer has its own close button) */}
+          {!mobileOpen && (
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground lg:hidden"
+              aria-label={t('menu.open')}
+              aria-expanded={false}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          )}
         </nav>
       </header>
 

@@ -5,8 +5,8 @@ export default function StructuredData() {
     name: 'ТехМастер',
     description:
       'Профессиональный ремонт бытовой техники в Ташкенте. Ремонт холодильников, стиральных машин, посудомоечных машин, плит, духовок, кондиционеров. Быстрый выезд мастера на дом.',
-    image: 'https://tehmaster.uz/og-image.png',
-    url: 'https://tehmaster.uz',
+    image: 'https://remontexnika.uz/og-image.jpg',
+    url: 'https://remontexnika.uz',
     telephone: '+998901200796',
     priceRange: 'от 50 000 сум',
     address: {
@@ -73,7 +73,7 @@ export default function StructuredData() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'ТехМастер',
-    url: 'https://tehmaster.uz',
+    url: 'https://remontexnika.uz',
     inLanguage: 'ru',
   };
 

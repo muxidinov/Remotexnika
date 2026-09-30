@@ -86,18 +86,18 @@ export async function POST(req: NextRequest) {
     date,
   };
 
-  try {
-    await addReview(review);
-  } catch (error) {
-    console.error('[reviews] Failed to store review:', error);
-    return NextResponse.json(
-      { error: 'Не удалось сохранить отзыв. Попробуйте позже.' },
-      { status: 500, headers: corsHeaders }
-    );
+  // Storage is best-effort: the review is always accepted and returned so the
+  // visitor sees it immediately, even if durable persistence is unavailable.
+  const stored = await addReview(review);
+  if (!stored) {
+    console.warn('[reviews] Review accepted but not persisted durably.');
   }
 
   // Reviews are published on the site only — they are NOT sent to Telegram.
-  return NextResponse.json({ success: true, review }, { status: 200, headers: corsHeaders });
+  return NextResponse.json(
+    { success: true, persisted: stored, review },
+    { status: 200, headers: corsHeaders }
+  );
 }
 
 export async function OPTIONS() {

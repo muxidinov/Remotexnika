@@ -37,10 +37,6 @@ export async function POST(req: NextRequest) {
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
-
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') ||
@@ -79,6 +75,11 @@ export async function POST(req: NextRequest) {
   // Build the Telegram message from the single request form
   const data = parsed.data;
   const applianceLabel = getApplianceLabel(data.appliance);
+
+  const latitude = typeof data.latitude === 'number' ? data.latitude : null;
+  const longitude = typeof data.longitude === 'number' ? data.longitude : null;
+  const hasCoordinates = latitude !== null && longitude !== null;
+
   const message = [
       '🔧 <b>НОВАЯ ЗАЯВКА</b>',
       '',
@@ -90,6 +91,12 @@ export async function POST(req: NextRequest) {
       `🕐 <b>Удобное время:</b> ${escapeHtml(data.preferredTime)}`,
       data.comment && data.comment.trim().length > 0
         ? `💬 <b>Комментарий:</b> ${escapeHtml(data.comment)}`
+        : '',
+      hasCoordinates
+        ? `🗺 <b>Координаты:</b> ${latitude}, ${longitude}`
+        : '🗺 <b>Геолокация:</b> не предоставлена',
+      data.locationLabel && data.locationLabel.trim().length > 0
+        ? `📌 <b>Точка на карте:</b> ${escapeHtml(data.locationLabel.trim())}`
         : '',
     ]
       .filter(Boolean)
@@ -123,15 +130,41 @@ export async function POST(req: NextRequest) {
 
     if (!telegramResponse.ok) {
       const errorData = await telegramResponse.text();
-      console.error('[Telegram] API error:', telegramResponse.status, errorData);
+      console.error('[Telegram] sendMessage error:', telegramResponse.status, errorData);
       return NextResponse.json(
         { error: 'Не удалось отправить заявку. Попробуйте позже или позвоните нам.' },
         { status: 502, headers: corsHeaders }
       );
     }
 
+
+    let locationSent = false;
+    if (hasCoordinates) {
+      try {
+        const locationResponse = await fetch(
+          `https://api.telegram.org/bot${botToken}/sendLocation`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              latitude,
+              longitude,
+            }),
+          }
+        );
+        locationSent = locationResponse.ok;
+        if (!locationResponse.ok) {
+          const errorData = await locationResponse.text();
+          console.error('[Telegram] sendLocation error:', locationResponse.status, errorData);
+        }
+      } catch (locationError) {
+        console.error('[Telegram] sendLocation network error:', locationError);
+      }
+    }
+
     return NextResponse.json(
-      { success: true },
+      { success: true, locationSent },
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {
@@ -141,4 +174,15 @@ export async function POST(req: NextRequest) {
       { status: 502, headers: corsHeaders }
     );
   }
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }
